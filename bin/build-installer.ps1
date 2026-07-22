@@ -26,6 +26,15 @@ $Iscc = @(
 ) | Where-Object { Test-Path $_ } | Select-Object -First 1
 if (-not $Iscc) { throw "Inno Setup not found. Install it:  winget install JRSoftware.InnoSetup" }
 
+# --- 0. version-consistency guard ---
+# The in-app update check compares against the C# AppVersion const. If it drifts from the installer
+# version, a fresh install nags "update available" against its own release. Never ship a mismatch.
+$csVer  = ([regex]'AppVersion\s*=\s*"([\d.]+)"').Match((Get-Content (Join-Path $App 'native\Program.cs') -Raw)).Groups[1].Value
+$issVer = ([regex]'#define\s+AppVersion\s+"([\d.]+)"').Match((Get-Content (Join-Path $App 'installer\shepherd-md.iss') -Raw)).Groups[1].Value
+if (-not $csVer -or -not $issVer) { throw "Could not read version from Program.cs / shepherd-md.iss" }
+if ($csVer -ne $issVer) { throw "VERSION MISMATCH: Program.cs AppVersion=$csVer but installer=$issVer. Bump both." }
+Write-Host "Version $csVer (Program.cs and installer agree)" -ForegroundColor DarkGray
+
 # --- 1. compile the app ---
 Write-Host "[1/3] Compiling ShepherdMD.exe..." -ForegroundColor Cyan
 $running = Get-Process ShepherdMD -ErrorAction SilentlyContinue

@@ -6,7 +6,7 @@
 ; writable. %LOCALAPPDATA%\Programs is writable; Program Files is not.
 
 #define AppName        "Shepherd Markdown"
-#define AppVersion     "1.0.2"
+#define AppVersion     "1.0.3"
 #define AppPublisher   "Shepherd"
 #define AppExeName     "ShepherdMD.exe"
 
@@ -76,7 +76,9 @@ Root: HKCU; Subkey: "Software\ShepherdMD\Capabilities\FileAssociations"; ValueTy
 Root: HKCU; Subkey: "Software\RegisteredApplications"; ValueType: string; ValueName: "{#AppName}"; ValueData: "Software\ShepherdMD\Capabilities"; Flags: uninsdeletevalue; Tasks: assocmd
 
 [Run]
-Filename: "{app}\{#AppExeName}"; Description: "Launch {#AppName}"; Flags: nowait postinstall skipifsilent
+; runasoriginaluser so the app comes back as the user (not elevated); NO skipifsilent, so a silent
+; update (triggered from the in-app "Update now") relaunches the app after installing.
+Filename: "{app}\{#AppExeName}"; Description: "Launch {#AppName}"; Flags: nowait postinstall runasoriginaluser
 
 [UninstallDelete]
 ; files the app generates at runtime, so uninstall leaves nothing behind

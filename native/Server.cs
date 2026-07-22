@@ -38,9 +38,11 @@ namespace ShepherdMD
             appDir = Program.AppDir.TrimEnd('\\');
             publicDir = Path.Combine(appDir, "public");
             libDir = Path.Combine(appDir, "lib");
-            configPath = Path.Combine(appDir, "config.json");
-            statePath = Path.Combine(appDir, "session.json");
-            runningPath = Path.Combine(appDir, "running.json");
+            // config/session/running live in the stable per-user data dir (survives updates); assets stay by the exe
+            string dataDir = Program.DataDir;
+            configPath = Path.Combine(dataDir, "config.json");
+            statePath = Path.Combine(dataDir, "session.json");
+            runningPath = Path.Combine(dataDir, "running.json");
             this.initialFile = initialFile;
             LoadConfig();
             if (!string.IsNullOrEmpty(initialFile)) { try { extraAllowed.Add(Path.GetDirectoryName(Path.GetFullPath(initialFile))); } catch { } }

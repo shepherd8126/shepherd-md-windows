@@ -19,12 +19,31 @@ namespace ShepherdMD
         [DllImport("user32.dll")] static extern bool SetProcessDPIAware();
 
         internal static string AppDir = AppDomain.CurrentDomain.BaseDirectory;
+        // User data lives in a STABLE per-user location, independent of the install folder, so it
+        // survives updates/reinstalls (the old scheme stored it next to the exe and lost it on rename).
+        internal static string DataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Shepherd Markdown");
+
+        static void EnsureDataDir()
+        {
+            try
+            {
+                Directory.CreateDirectory(DataDir);
+                // one-time migration from the legacy "next to the exe" location
+                foreach (string name in new[] { "session.json", "config.json", "windowstate.txt" })
+                {
+                    string dst = Path.Combine(DataDir, name), src = Path.Combine(AppDir, name);
+                    if (!File.Exists(dst) && File.Exists(src)) { try { File.Copy(src, dst, false); } catch { } }
+                }
+            }
+            catch { }
+        }
 
         [STAThread]
         static void Main(string[] args)
         {
             try { SetProcessDPIAware(); } catch { }
             try { SetCurrentProcessExplicitAppUserModelID("Shepherd.MD.Reader"); } catch { }
+            EnsureDataDir();
 
             string target = args.Length > 0 ? args[0] : null;
             if (target != null) { try { target = Path.GetFullPath(target); } catch { } }
@@ -60,7 +79,7 @@ namespace ShepherdMD
         {
             try
             {
-                string f = Path.Combine(AppDir, "running.json");
+                string f = Path.Combine(DataDir, "running.json");
                 if (!File.Exists(f)) return -1;
                 Match m = Regex.Match(File.ReadAllText(f), "\"port\"\\s*:\\s*(\\d+)");
                 if (m.Success) return int.Parse(m.Groups[1].Value);
@@ -87,8 +106,8 @@ namespace ShepherdMD
         WebView2 web;
         string url;
         LocalServer server;
-        string statePath = Path.Combine(Program.AppDir, "windowstate.txt");
-        const string AppVersion = "1.0.1";
+        string statePath = Path.Combine(Program.DataDir, "windowstate.txt");
+        const string AppVersion = "1.0.3";
         const string UpdateFeed = "https://github.com/shepherd8126/shepherd-md-releases/releases/latest/download/latest.json";
         string pendingUpdateUrl = null;
         bool updateChecked = false;
