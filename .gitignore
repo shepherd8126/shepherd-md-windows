@@ -1,0 +1,18 @@
+# build outputs
+dist/
+installer/payload/
+ShepherdMD.exe
+
+# runtime / user data (never commit)
+webview2profile/
+edgeprofile/
+session.json
+config.json
+windowstate.txt
+running.json
+
+# misc
+*.log
+desktop.ini
+Thumbs.db
+.DS_Store
