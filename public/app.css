@@ -169,7 +169,7 @@ body.win-max #winresize { display: none; }
 .sr-snip { color: var(--fg-2); font-size: 12px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sr-empty { color: var(--fg-2); font-size: 13px; padding: 12px 10px; }
 
-.side-foot { border-top: 1px solid var(--border); padding: 9px; display: flex; flex-wrap: wrap; gap: 7px; }
+.side-foot { border-top: 1px solid var(--border); min-height: 40px; padding: 6px 9px; display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
 .foot-btn { flex: 0 1 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 5px 12px; font-size: 12px; white-space: nowrap; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--bg); color: var(--fg); cursor: pointer; transition: background .16s, border-color .16s, transform .12s var(--ease); }
 .foot-btn.foot-icon { padding: 5px 9px; }
 .foot-btn:hover { background: var(--hover); border-color: var(--accent); color: var(--accent); }
@@ -213,9 +213,11 @@ body.win-max #winresize { display: none; }
 #progress { position: absolute; top: 0; left: 0; height: 2px; width: 0; background: var(--accent); z-index: 150; opacity: 0; transition: width .2s var(--ease), opacity .3s; }
 #progress.active { opacity: 1; }
 
-#content-scroll { flex: 1; overflow-y: auto; background: var(--bg); scroll-behavior: smooth; }
-#content-wrap { display: flex; justify-content: safe center; gap: 48px; margin: 0 auto; padding: 34px 48px 90px; align-items: flex-start; }
-#content { flex: 1 1 auto; min-width: 0; max-width: var(--read-w); font-size: calc(15px * var(--zoom)); overflow-wrap: break-word; }
+/* content-row = the horizontal split of [scrolling document | docked TOC panel] */
+#content-row { flex: 1 1 auto; min-height: 0; display: flex; overflow: hidden; }
+#content-scroll { flex: 1 1 auto; min-width: 0; overflow-y: auto; background: var(--bg); scroll-behavior: smooth; }
+#content-wrap { padding: 34px 48px 90px; }
+#content { max-width: var(--read-w); margin: 0 auto; min-width: 0; font-size: calc(15px * var(--zoom)); overflow-wrap: break-word; }
 #content.anim { animation: fadeUp .3s var(--ease); }
 .markdown-body { background: transparent !important; color: var(--fg); }
 
@@ -279,8 +281,10 @@ body.win-max #winresize { display: none; }
 .mermaid-error { border: 1px solid var(--cal-caution); border-radius: 10px; padding: 10px 14px; color: var(--cal-caution); font-size: 12.5px; background: color-mix(in srgb, var(--cal-caution) 8%, transparent); }
 
 /* ---- TOC ---- */
-.toc { width: 236px; flex: 0 0 auto; align-self: flex-start; position: sticky; top: 8px; max-height: calc(100vh - 128px); overflow-y: auto; font-size: 12.5px; padding: 6px 0 6px 16px; border-left: 1px solid var(--border); }
+/* TOC: a proper fixed panel docked on the right, its own scroll, toggled by the Contents button */
+.toc { width: 264px; flex: 0 0 auto; overflow-y: auto; font-size: 12.5px; padding: 16px 10px 24px 16px; border-left: 1px solid var(--border); background: var(--bg-2); }
 body.toc-hide .toc { display: none !important; }
+.toc[hidden] { display: none !important; }
 .toc-title { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--fg-3); font-weight: 500; margin-bottom: 8px; }
 .toc a { display: block; color: var(--fg-2); text-decoration: none; padding: 4px 10px; border-radius: 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: background .14s, color .14s, padding-left .14s var(--ease); }
 .toc a:hover { background: var(--hover); color: var(--fg); padding-left: 13px; }
@@ -290,7 +294,7 @@ body.toc-hide .toc { display: none !important; }
 .toc a.lvl-3:hover, .toc a.lvl-4:hover { padding-left: 23px; }
 
 /* ---- status bar ---- */
-#statusbar { flex: 0 0 auto; height: 30px; display: flex; align-items: center; gap: 16px; padding: 0 16px; border-top: 1px solid var(--border); background: var(--bg-2); font-size: 11.5px; color: var(--fg-3); transition: background .35s var(--ease); }
+#statusbar { flex: 0 0 auto; height: 40px; display: flex; align-items: center; gap: 16px; padding: 0 18px; border-top: 1px solid var(--border); background: var(--bg-2); font-size: 11.5px; color: var(--fg-3); transition: background .35s var(--ease); }
 #statusbar .st { display: inline-flex; align-items: center; gap: 6px; }
 #statusbar .st svg { width: 13px; height: 13px; }
 #statusbar[hidden] { display: none; }

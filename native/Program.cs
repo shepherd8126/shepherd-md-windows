@@ -107,7 +107,7 @@ namespace ShepherdMD
         string url;
         LocalServer server;
         string statePath = Path.Combine(Program.DataDir, "windowstate.txt");
-        const string AppVersion = "1.0.3";
+        const string AppVersion = "1.0.4";
         const string UpdateFeed = "https://github.com/shepherd8126/shepherd-md-releases/releases/latest/download/latest.json";
         string pendingUpdateUrl = null;
         bool updateChecked = false;
@@ -498,14 +498,29 @@ namespace ShepherdMD
             finally { Marshal.ReleaseComObject(dlg); }
         }
 
-        // Same modern dialog, in file mode (no FOS_PICKFOLDERS) - picks a single file.
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        struct FILTERSPEC { public string pszName; public string pszSpec; }
+
+        // Same modern dialog, in file mode (no FOS_PICKFOLDERS) - picks a single file, filtered to Markdown by default.
         public static string ShowFile(IntPtr owner)
         {
             IFileOpenDialog dlg = (IFileOpenDialog)new FileOpenDialogRCW();
+            IntPtr specPtr = IntPtr.Zero;
+            int count = 2;
             try
             {
                 uint opts; dlg.GetOptions(out opts);
                 dlg.SetOptions(opts | FOS_FORCEFILESYSTEM | FOS_NOCHANGEDIR);
+                FILTERSPEC[] filters =
+                {
+                    new FILTERSPEC { pszName = "Markdown files", pszSpec = "*.md;*.markdown;*.mdown;*.mkd;*.txt" },
+                    new FILTERSPEC { pszName = "All files", pszSpec = "*.*" },
+                };
+                int elem = Marshal.SizeOf(typeof(FILTERSPEC));
+                specPtr = Marshal.AllocHGlobal(elem * count);
+                for (int i = 0; i < count; i++) Marshal.StructureToPtr(filters[i], (IntPtr)(specPtr.ToInt64() + i * elem), false);
+                dlg.SetFileTypes((uint)count, specPtr);
+                dlg.SetFileTypeIndex(1); // 1-based: default to the Markdown filter
                 dlg.SetTitle("Open a Markdown file");
                 int hr = dlg.Show(owner);
                 if (hr != 0) return null;
@@ -514,7 +529,16 @@ namespace ShepherdMD
                 Marshal.ReleaseComObject(item);
                 return path;
             }
-            finally { Marshal.ReleaseComObject(dlg); }
+            finally
+            {
+                if (specPtr != IntPtr.Zero)
+                {
+                    int elem = Marshal.SizeOf(typeof(FILTERSPEC));
+                    for (int i = 0; i < count; i++) { try { Marshal.DestroyStructure((IntPtr)(specPtr.ToInt64() + i * elem), typeof(FILTERSPEC)); } catch { } }
+                    Marshal.FreeHGlobal(specPtr);
+                }
+                Marshal.ReleaseComObject(dlg);
+            }
         }
     }
 

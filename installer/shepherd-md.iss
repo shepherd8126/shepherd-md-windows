@@ -6,7 +6,7 @@
 ; writable. %LOCALAPPDATA%\Programs is writable; Program Files is not.
 
 #define AppName        "Shepherd Markdown"
-#define AppVersion     "1.0.3"
+#define AppVersion     "1.0.4"
 #define AppPublisher   "Shepherd"
 #define AppExeName     "ShepherdMD.exe"
 

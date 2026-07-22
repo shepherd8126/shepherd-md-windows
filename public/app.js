@@ -570,7 +570,7 @@
   function applyZoom() { document.documentElement.style.setProperty('--zoom', prefs.zoom); el.zoomLabel.textContent = Math.round(prefs.zoom * 100) + '%'; }
   function applyWidth() { document.documentElement.style.setProperty('--read-w', prefs.wide ? '1080px' : '760px'); $('#btn-width').classList.toggle('on', !prefs.wide); }
   function applySideW() { document.documentElement.style.setProperty('--side-w', prefs.sideW + 'px'); }
-  function updateTocFit() { el.body.classList.toggle('toc-hide', el.contentScroll.clientWidth < 940); }
+  function updateTocFit() { var row = document.getElementById('content-row'); el.body.classList.toggle('toc-hide', !row || row.clientWidth < 700); }
   $('#btn-zoom-in').addEventListener('click', () => { prefs.zoom = Math.min(2.2, +(prefs.zoom + 0.1).toFixed(2)); applyZoom(); saveState(); });
   $('#btn-zoom-out').addEventListener('click', () => { prefs.zoom = Math.max(0.6, +(prefs.zoom - 0.1).toFixed(2)); applyZoom(); saveState(); });
   el.zoomLabel.addEventListener('click', () => { prefs.zoom = 1; applyZoom(); saveState(); });
@@ -753,7 +753,13 @@
   window.addEventListener('drop', (e) => {
     if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return; e.preventDefault();
     const f = e.dataTransfer.files[0]; const reader = new FileReader();
-    reader.onload = () => { const t = createTab({ name: f.name, source: String(reader.result), ephemeral: true, mtime: f.lastModified || 0 }); activeTabId = t.id; renderTab(t); renderTabs(); };
+    reader.onload = () => {
+      const cur = currentTab();
+      let t;
+      if (cur && !cur.path && !cur.source && !cur.ephemeral) { t = cur; t.name = f.name; t.source = String(reader.result); t.ephemeral = true; t.mtime = f.lastModified || 0; } // reuse an empty "New tab"
+      else t = createTab({ name: f.name, source: String(reader.result), ephemeral: true, mtime: f.lastModified || 0 });
+      activeTabId = t.id; renderTab(t); renderTabs();
+    };
     reader.readAsText(f);
   });
 
@@ -851,7 +857,7 @@
     if (!isHosted()) { const t = $('#titlebar'); if (t) t.style.display = 'none'; const r = $('#winresize'); if (r) r.style.display = 'none'; }
   })();
   // The in-process host delivers "open this file" / "focus" from other launches by calling this directly.
-  function connectSSE() { window.__externalOpen = function (p) { try { if (p) openFile(p, { newTab: true }); } catch (_) {} }; }
+  function connectSSE() { window.__externalOpen = function (p) { try { if (p) openFile(p); } catch (_) {} }; } // no forced newTab: reuses an empty current tab, else opens a new one
 
   /* ================= boot ================= */
   function hideSplash() { el.splash.classList.add('gone'); setTimeout(() => el.splash.remove(), 500); }
