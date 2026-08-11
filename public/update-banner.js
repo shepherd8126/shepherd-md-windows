@@ -77,6 +77,9 @@
         update.style.cursor = 'default';
         if (window.chrome && window.chrome.webview) {
           window.chrome.webview.postMessage({ cmd: 'update' });
+        } else if (window.__android && window.__android.installUpdate) {
+          window.__android.installUpdate(info.url || '');
+          title.textContent = 'Downloading… then confirm the install.';
         } else if (window.__electron && window.__electron.installUpdate) {
           window.__electron.installUpdate(info.url || '');
           title.textContent = 'Opening download… drag the new app into Applications.';

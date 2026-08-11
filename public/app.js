@@ -773,6 +773,7 @@
       try { const added = await window.__electron.pickFolder(); if (added) { showPanel('files'); await loadTree(); toast('Folder added', 'i-check'); saveState(); } } catch (_) {}
       return;
     }
+    if (window.__android && window.__android.pickFolder) { window.__android.pickFolder(); return; }    // Android (system folder picker -> __folderAdded)
     if (!window.showDirectoryPicker) { toast('Folder picking needs the app window', 'i-info'); return; }
     try {
       const dir = await window.showDirectoryPicker(); const files = []; await walkDir(dir, '', files); files.sort((a, b) => a.name.localeCompare(b.name));
@@ -787,6 +788,7 @@
       try { const p = await window.__electron.pickFile(); if (p) await openFile(p); } catch (_) {}
       return;
     }
+    if (window.__android && window.__android.pickFile) { window.__android.pickFile(); return; }        // Android (system file picker -> __externalOpen)
     if (window.showOpenFilePicker) {                                                                   // browser fallback
       try {
         const [h] = await window.showOpenFilePicker({ types: [{ description: 'Markdown', accept: { 'text/markdown': ['.md', '.markdown', '.mdown', '.mkd', '.txt'] } }] });
