@@ -71,7 +71,7 @@ foreach ($bad in 'session.json','windowstate.txt','running.json','webview2profil
   if (Test-Path (Join-Path $Stage $bad)) { throw "Payload contains '$bad' - refusing to build." }
 }
 $leak = Get-ChildItem $Stage -Recurse -File | Where-Object { $_.Length -lt 5MB } |
-        Select-String -Pattern 'Work Stuff' -SimpleMatch -List -ErrorAction SilentlyContinue
+        Select-String -Pattern 'Work Stuff', 'App Builds' -SimpleMatch -List -ErrorAction SilentlyContinue
 if ($leak) { throw "Payload leaks a local path: $($leak.Path)" }
 
 # --- 3. compile the installer ---
